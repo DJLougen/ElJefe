@@ -1,0 +1,12 @@
+model_id: google/gemma-4-E4B-it
+revision: null          # pin a commit sha for reproducibility once known
+dtype: bfloat16
+device_map: auto
+
+gen_params:
+  temperature: 0.0      # greedy
+  max_new_tokens: 1024
+  do_sample: false
+
+batch_size: 8
+out_path: data/generations/local_e4b.jsonl

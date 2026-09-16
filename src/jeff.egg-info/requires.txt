@@ -1,0 +1,16 @@
+torch
+transformers
+accelerate
+datasets
+sentence-transformers
+scikit-learn
+lightgbm
+pandas
+numpy
+pyarrow
+pydantic>=2
+pyyaml
+tqdm
+matplotlib
+openai
+jsonschema

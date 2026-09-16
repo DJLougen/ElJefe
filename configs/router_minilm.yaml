@@ -1,0 +1,19 @@
+seed: 42
+encoder: sentence-transformers/all-MiniLM-L6-v2
+max_length: 512
+
+heads:
+  classification: true   # P(local_sufficient)
+  regression: true       # E[delta_q]
+lambda_regression: 1.0   # Huber loss weight (plan §9)
+
+train:
+  epochs: 10
+  batch_size: 32
+  lr: 2.0e-5
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  early_stopping_patience: 3
+  fp16: true
+
+out_dir: artifacts/models/jeff-v0

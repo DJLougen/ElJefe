@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: jeff
+Version: 0.1.0
+Summary: Jeff: a tiny router that predicts the marginal value of frontier inference over local Gemma 4 E4B
+Requires-Python: >=3.10
+Requires-Dist: torch
+Requires-Dist: transformers
+Requires-Dist: accelerate
+Requires-Dist: datasets
+Requires-Dist: sentence-transformers
+Requires-Dist: scikit-learn
+Requires-Dist: lightgbm
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: pyarrow
+Requires-Dist: pydantic>=2
+Requires-Dist: pyyaml
+Requires-Dist: tqdm
+Requires-Dist: matplotlib
+Requires-Dist: openai
+Requires-Dist: jsonschema

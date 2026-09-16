@@ -1,0 +1,37 @@
+seed: 42
+
+# Label derivation (plan §5)
+quality_floor: 0.70
+epsilon: 0.10
+
+# Objective-task sources (Phase A). `limit: null` = take all.
+sources:
+  gsm8k:
+    enabled: true
+    limit: null
+  math500:
+    enabled: true
+    limit: null
+  mmlu_pro:
+    enabled: true
+    limit: 3000
+  mbpp:
+    enabled: true
+    limit: null
+  ifeval:
+    enabled: true
+    limit: null
+
+# Split policy (plan §7): group-aware, no template leakage.
+splits:
+  validation_frac: 0.10
+  test_iid_frac: 0.10
+  # Entire sources held out for the OOD test.
+  ood_sources: [ifeval]
+  # Fixed small set downloaded to the Mac for production-model calibration.
+  mac_calibration_n: 200
+
+near_duplicate:
+  enabled: true
+  # Jaccard over word 3-grams; pairs above this are grouped together.
+  threshold: 0.80

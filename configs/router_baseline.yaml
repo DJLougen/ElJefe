@@ -1,0 +1,20 @@
+seed: 42
+
+tfidf:
+  max_features: 50000
+  ngram_range: [1, 2]
+  logistic_C: 1.0
+
+embedding:
+  model: sentence-transformers/all-MiniLM-L6-v2
+  batch_size: 64
+  cache_path: artifacts/baselines/prompt_embeddings.npy
+  # lightgbm params
+  n_estimators: 400
+  learning_rate: 0.05
+  num_leaves: 31
+
+heuristic:
+  # Simple rules evaluated as a baseline router (plan §9 baseline 1).
+  long_prompt_tokens: 4000
+  hard_families: [math, code]

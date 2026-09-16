@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jeff"
+version = "0.1.0"
+description = "Jeff: a tiny router that predicts the marginal value of frontier inference over local Gemma 4 E4B"
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "transformers",
+    "accelerate",
+    "datasets",
+    "sentence-transformers",
+    "scikit-learn",
+    "lightgbm",
+    "pandas",
+    "numpy",
+    "pyarrow",
+    "pydantic>=2",
+    "pyyaml",
+    "tqdm",
+    "matplotlib",
+    "openai",
+    "jsonschema",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

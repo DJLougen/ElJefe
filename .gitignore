@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+data/raw/
+data/prompts/
+data/generations/
+data/scores/
+data/router/
+artifacts/
+!artifacts/.gitkeep
+*.tar.gz
+.DS_Store
