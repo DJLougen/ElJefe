@@ -69,7 +69,17 @@ def load_router_dataset(path: str | os.PathLike[str]) -> list[RouterRow]:
     import pandas as pd
 
     df = pd.read_parquet(path)
-    return [RouterRow.model_validate(rec) for rec in df.to_dict(orient="records")]
+    records = df.to_dict(orient="records")
+    # Parquet serializes dict columns as JSON strings — decode them back.
+    import json as _json
+    for rec in records:
+        for k in ("metadata",):
+            if isinstance(rec.get(k), str):
+                try:
+                    rec[k] = _json.loads(rec[k])
+                except Exception:
+                    rec[k] = {}
+    return [RouterRow.model_validate(rec) for rec in records]
 
 
 def update_manifest(name: str, entry: dict[str, Any],
@@ -253,6 +263,7 @@ def embed_prompts(prompts: list[str], model_name: str,
     """Encode prompts with a sentence-transformers model (lazy import)."""
     from sentence_transformers import SentenceTransformer
 
+    device = device or os.environ.get("JEFF_EMBED_DEVICE")
     if model_name not in _EMBEDDER_CACHE:
         _EMBEDDER_CACHE[model_name] = SentenceTransformer(model_name, device=device)
     model = _EMBEDDER_CACHE[model_name]
