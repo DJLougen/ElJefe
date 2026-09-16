@@ -11,9 +11,16 @@ import argparse
 import sys
 import time
 from pathlib import Path
+import os
 
-ROOT = Path(__file__).resolve().parents[1]
+try:
+    ROOT = Path(__file__).resolve().parents[1]
+except NameError:  # colab exec / jupyter kernel has no __file__
+    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    if not (ROOT / 'src').exists():
+        ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
+from jeff.cli import parse_args
 
 
 def main() -> int:
@@ -31,7 +38,9 @@ def main() -> int:
         "--tasks", default=str(ROOT / "data" / "prompts" / "tasks.jsonl")
     )
     parser.add_argument("--out", default=None, help="override cfg out_path")
-    args = parser.parse_args()
+    parser.add_argument("--batch-size", type=int, default=None,
+                        help="override cfg batch_size")
+    args = parse_args(parser)
 
     import yaml
 
@@ -63,10 +72,10 @@ def main() -> int:
         gen_params=cfg.get("gen_params"),
         dtype=cfg.get("dtype"),
         device_map=cfg.get("device_map"),
-        batch_size=int(cfg.get("batch_size") or 8),
+        batch_size=int(args.batch_size or cfg.get("batch_size") or 8),
     )
 
-    batch_size = int(cfg.get("batch_size") or 8)
+    batch_size = int(args.batch_size or cfg.get("batch_size") or 8)
     produced = 0
     t0 = time.time()
     buffer = []

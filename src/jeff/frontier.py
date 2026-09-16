@@ -69,6 +69,7 @@ class FrontierClient:
         self._spent = 0.0
         self._spent_loaded = False
         self._out_path: str | None = None
+        self._client = None
 
     # -- client --------------------------------------------------------------
 
@@ -329,8 +330,15 @@ class FrontierClient:
                     for fut in finished:
                         in_flight.pop(fut)
                         gen = fut.result()
-                        out_f.write(gen.model_dump_json() + "\n")
-                        out_f.flush()
+                        if gen.error:
+                            # Errors go to a sidecar file so they never poison
+                            # the resume cache — a retry will re-attempt them.
+                            err_path = out_path + ".errors.jsonl"
+                            with open(err_path, "a", encoding="utf-8") as ef:
+                                ef.write(gen.model_dump_json() + "\n")
+                        else:
+                            out_f.write(gen.model_dump_json() + "\n")
+                            out_f.flush()
                         produced += 1
                         yield gen
                         submit_next()

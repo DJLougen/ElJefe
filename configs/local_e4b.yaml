@@ -8,5 +8,5 @@ gen_params:
   max_new_tokens: 1024
   do_sample: false
 
-batch_size: 8
+batch_size: 64
 out_path: data/generations/local_e4b.jsonl

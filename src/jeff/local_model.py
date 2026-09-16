@@ -142,12 +142,17 @@ class LocalGenerator:
                     )
                 elapsed_ms = (time.perf_counter() - t0) * 1000.0
                 input_len = enc["input_ids"].shape[1]
-                for task, seq in zip(batch, out):
+                pad_id = self._tokenizer.pad_token_id
+                for i, (task, seq) in enumerate(zip(batch, out)):
                     new_tokens = seq[input_len:]
                     answer = self._tokenizer.decode(
                         new_tokens, skip_special_tokens=True
                     ).strip()
-                    n_out = int(new_tokens.shape[0])
+                    # count real generated tokens, not right-side pad fill
+                    if pad_id is not None:
+                        n_out = int((new_tokens != pad_id).sum().item())
+                    else:
+                        n_out = int(new_tokens.shape[0])
                     if max_new and n_out >= int(max_new):
                         finish = "length"
                     else:

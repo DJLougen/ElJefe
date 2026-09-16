@@ -12,9 +12,16 @@ import argparse
 import json
 import sys
 from pathlib import Path
+import os
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+try:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
+except NameError:  # colab exec / jupyter kernel has no __file__
+    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    if not (REPO_ROOT / 'src').exists():
+        REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
+from jeff.cli import parse_args as _jeff_parse_args
 
 
 def parse_args() -> argparse.Namespace:
@@ -26,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--out-dir", default=str(REPO_ROOT / "artifacts" / "baselines" / "embedding"))
     p.add_argument("--threshold", type=float, default=0.9)
     p.add_argument("--max-rows", type=int, default=None)
-    return p.parse_args()
+    return _jeff_parse_args(p)
 
 
 def main() -> None:

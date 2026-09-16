@@ -7,9 +7,16 @@ import argparse
 import sys
 from collections import Counter
 from pathlib import Path
+import os
 
-ROOT = Path(__file__).resolve().parents[1]
+try:
+    ROOT = Path(__file__).resolve().parents[1]
+except NameError:  # colab exec / jupyter kernel has no __file__
+    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    if not (ROOT / 'src').exists():
+        ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
+from jeff.cli import parse_args
 
 
 def main() -> int:
@@ -23,7 +30,7 @@ def main() -> int:
     parser.add_argument(
         "--out", default=str(ROOT / "data" / "prompts" / "tasks.jsonl")
     )
-    args = parser.parse_args()
+    args = parse_args(parser)
 
     from jeff.datasets import load_tasks, normalize, update_manifest
     from jeff.schema import write_jsonl

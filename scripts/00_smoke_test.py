@@ -13,9 +13,16 @@ import json
 import platform
 import sys
 from pathlib import Path
+import os
 
-ROOT = Path(__file__).resolve().parents[1]
+try:
+    ROOT = Path(__file__).resolve().parents[1]
+except NameError:  # colab exec / jupyter kernel has no __file__
+    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    if not (ROOT / 'src').exists():
+        ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
+from jeff.cli import parse_args
 
 
 def main() -> int:
@@ -25,7 +32,7 @@ def main() -> int:
         default=str(ROOT / "configs" / "data_v0.yaml"),
         help="config path (unused; kept for interface consistency)",
     )
-    args = parser.parse_args()
+    args = parse_args(parser)
 
     report: dict = {"python": sys.version, "platform": platform.platform()}
     ok = True
@@ -70,15 +77,14 @@ def main() -> int:
     try:
         from datasets import load_dataset
 
-        ds = load_dataset("hf-internal-testing/tiny-mmlu", split="test")
-        report["datasets"] = {"dataset": "hf-internal-testing/tiny-mmlu", "rows": len(ds)}
+        ds = load_dataset("openai/gsm8k", "main", split="test[:5]")
+        report["datasets"] = {"dataset": "openai/gsm8k", "rows": len(ds)}
     except Exception as exc:
         # Fallback: hub reachability without the datasets lib.
         try:
             from huggingface_hub import HfApi
 
-            info = HfApi().dataset_info("hf-internal-testing/tiny-mmlu")
-            report["datasets"] = {"dataset": info.id, "via": "hub_api"}
+            info = HfApi().dataset_info("openai/gsm8k")
         except Exception as exc2:
             report["datasets_error"] = (
                 f"{type(exc).__name__}: {exc}; fallback {type(exc2).__name__}: {exc2}"
