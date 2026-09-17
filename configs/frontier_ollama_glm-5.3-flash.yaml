@@ -1,0 +1,20 @@
+provider: ollama
+base_url: http://localhost:11434/v1
+api_key_env: OLLAMA_API_KEY   # unused by ollama; set dummy
+model: glm-5.3-flash:cloud
+
+generation:
+  temperature: 0.0
+  max_tokens: 2048
+
+max_examples: 15000
+max_total_cost_usd: 1000.0    # cloud quota, not dollars; keep huge, rely on max_examples
+max_concurrency: 24
+request_timeout_s: 180
+max_retries: 5
+
+price_input_per_mtok: 0.0
+price_output_per_mtok: 0.0
+
+cache: true
+out_path: data/generations/frontier_ollama_glm-5.3-flash.jsonl

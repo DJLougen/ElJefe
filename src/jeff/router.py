@@ -663,6 +663,7 @@ def train_embedding_router(
         learning_rate=float(emb_cfg.get("learning_rate", 0.05)),
         num_leaves=int(emb_cfg.get("num_leaves", 31)),
         random_state=seed,
+        n_jobs=int(emb_cfg.get("n_jobs", 1)),  # lgbm multithread segfaults on macOS arm64
     )
     backend = "lightgbm"
     try:
@@ -795,7 +796,8 @@ def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
         val_rows = [train_rows[i] for i in idx[:cut]]
         train_rows = [train_rows[i] for i in idx[cut:]] or train_rows
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = ("cuda" if torch.cuda.is_available()
+              else "mps" if torch.backends.mps.is_available() else "cpu")
     use_amp = bool(tc.get("fp16", True)) and device == "cuda"
     tokenizer = AutoTokenizer.from_pretrained(encoder_name)
     model = build_minilm_module(encoder_name).to(device)
