@@ -1,9 +1,9 @@
-"""Router models for Jeff.
+"""Router models for ElJefe.
 
 A `Router` is a uniform wrapper over every router kind in the experiment
 matrix (plan §31): constant endpoints, the heuristic baseline, TF-IDF +
 logistic regression, frozen-embedding + LightGBM, and the fine-tuned
-dual-head MiniLM encoder (Jeff v0).
+dual-head MiniLM encoder (ElJefe v0).
 
 Heavy dependencies (torch, transformers, sentence-transformers, lightgbm)
 are imported lazily inside the functions that need them so this module
@@ -22,7 +22,7 @@ from typing import Any, Iterable, Optional
 
 import numpy as np
 
-from jeff.schema import RouterRow, stable_id
+from eljefe.schema import RouterRow, stable_id
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -86,12 +86,12 @@ def update_manifest(name: str, entry: dict[str, Any],
                     path: str | os.PathLike[str] | None = None) -> Path:
     """Merge `entry` into artifacts/reports/manifest.json under key `name`.
 
-    Delegates to jeff.datasets.update_manifest (the repo convention) and
+    Delegates to eljefe.datasets.update_manifest (the repo convention) and
     stamps git_commit into the entry. `path` is accepted for backward
     compatibility but the manifest always lives at
     <root>/artifacts/reports/manifest.json.
     """
-    from jeff.datasets import update_manifest as _update_manifest
+    from eljefe.datasets import update_manifest as _update_manifest
 
     entry = dict(entry)
     entry.setdefault("git_commit", git_commit())
@@ -111,7 +111,7 @@ def prompt_key(prompt: str, system_prompt: Optional[str] = None) -> str:
 
 def _fallback_features(prompt: str, system_prompt: Optional[str] = None,
                        task_family: Optional[str] = None) -> dict[str, Any]:
-    """Minimal feature dict used only when jeff.features is unavailable."""
+    """Minimal feature dict used only when eljefe.features is unavailable."""
     import re
 
     text = prompt or ""
@@ -140,9 +140,9 @@ def _fallback_features(prompt: str, system_prompt: Optional[str] = None,
 
 
 def extract_row_features(row: RouterRow) -> dict[str, Any]:
-    """Feature dict for one RouterRow via jeff.features (lazy, with fallback)."""
+    """Feature dict for one RouterRow via eljefe.features (lazy, with fallback)."""
     try:
-        from jeff.features import extract_features
+        from eljefe.features import extract_features
 
         feats = dict(extract_features(row.prompt, row.system_prompt, row.metadata))
     except Exception:
@@ -263,7 +263,7 @@ def embed_prompts(prompts: list[str], model_name: str,
     """Encode prompts with a sentence-transformers model (lazy import)."""
     from sentence_transformers import SentenceTransformer
 
-    device = device or os.environ.get("JEFF_EMBED_DEVICE")
+    device = device or os.environ.get("ELJEFE_EMBED_DEVICE")
     if model_name not in _EMBEDDER_CACHE:
         _EMBEDDER_CACHE[model_name] = SentenceTransformer(model_name, device=device)
     model = _EMBEDDER_CACHE[model_name]
@@ -325,7 +325,7 @@ def predict_proba_rows(router: "Router", rows: list[RouterRow],
 
 
 class Router:
-    """Uniform wrapper over all router kinds (CONTRACTS.md `jeff.router`).
+    """Uniform wrapper over all router kinds (CONTRACTS.md `eljefe.router`).
 
     kind:
       - "constant"  : payload {"p": float}
@@ -555,7 +555,7 @@ def _labels(rows: list[RouterRow], mode: str = "strict") -> tuple[np.ndarray, np
     (falls back to 0.7/0.1 when unset). Conservative: also demands absolute
     quality, not just local-beats-frontier.
     mode="oracle": matches the oracle's argmax rule — local is sufficient
-    whenever local_score >= frontier_score. Trains Jeff to imitate the
+    whenever local_score >= frontier_score. Trains ElJefe to imitate the
     quality-optimal cheap route rather than a stricter surrogate.
     """
     if mode == "oracle":
@@ -719,7 +719,7 @@ def train_embedding_router(
 
 
 # ---------------------------------------------------------------------------
-# Jeff v0 — fine-tuned dual-head MiniLM (plan §9)
+# ElJefe v0 — fine-tuned dual-head MiniLM (plan §9)
 # ---------------------------------------------------------------------------
 
 
@@ -750,11 +750,11 @@ def build_minilm_module(encoder_name: str):
 
 
 def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
-    """Jeff v0: fine-tune a MiniLM-sized encoder with dual heads.
+    """ElJefe v0: fine-tune a MiniLM-sized encoder with dual heads.
 
     Loss = BCE(local_sufficient) + lambda * Huber(delta_q)  (plan §9).
     Early stopping monitors validation routing utility — quality_retention
-    at threshold 0.9 via jeff.metrics.routing_metrics (utility as tiebreak).
+    at threshold 0.9 via eljefe.metrics.routing_metrics (utility as tiebreak).
     Saves best checkpoint + tokenizer + config + manifest to cfg.out_dir.
     """
     import torch
@@ -762,7 +762,7 @@ def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
     from torch.utils.data import DataLoader, Dataset
     from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
-    from jeff.metrics import routing_metrics
+    from eljefe.metrics import routing_metrics
 
     seed = int(cfg.get("seed", 42))
     seed_everything(seed)
@@ -781,7 +781,7 @@ def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
     weight_decay = float(tc.get("weight_decay", 0.01))
     warmup_ratio = float(tc.get("warmup_ratio", 0.1))
     patience = int(tc.get("early_stopping_patience", 3))
-    out_dir = Path(cfg.get("out_dir", "artifacts/models/jeff-v0"))
+    out_dir = Path(cfg.get("out_dir", "artifacts/models/eljefe-v0"))
     if not out_dir.is_absolute():
         out_dir = REPO_ROOT / out_dir
     out_dir.mkdir(parents=True, exist_ok=True)

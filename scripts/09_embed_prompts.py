@@ -17,11 +17,11 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 
 def ids_path(cache_path: Path) -> Path:
@@ -65,7 +65,7 @@ def parse_args() -> argparse.Namespace:
                    help="override cfg.embedding.cache_path")
     p.add_argument("--batch-size", type=int, default=None)
     p.add_argument("--max-rows", type=int, default=None, help="pilot cap on rows read")
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def main() -> None:
@@ -73,7 +73,7 @@ def main() -> None:
     import numpy as np
     import yaml
 
-    from jeff.router import embed_prompts, load_router_dataset, prompt_key
+    from eljefe.router import embed_prompts, load_router_dataset, prompt_key
 
     cfg = yaml.safe_load(Path(args.config).read_text()) or {}
     emb_cfg = dict(cfg.get("embedding") or {})

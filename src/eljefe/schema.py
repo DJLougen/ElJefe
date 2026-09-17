@@ -1,4 +1,4 @@
-"""Canonical data schemas for Jeff.
+"""Canonical data schemas for ElJefe.
 
 Every pipeline stage reads/writes these models as JSONL. Never discard raw
 fields when deriving labels — downstream policies re-derive them differently.
@@ -148,12 +148,12 @@ class RouterRow(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Jeff-0 input / output
+# ElJefe-0 input / output
 # ---------------------------------------------------------------------------
 
 
 class RouterInput(BaseModel):
-    """What Jeff-0 sees before invoking the local model (plan §4)."""
+    """What ElJefe-0 sees before invoking the local model (plan §4)."""
 
     prompt: str
     system_prompt: Optional[str] = None

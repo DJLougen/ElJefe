@@ -1,12 +1,12 @@
-# PLAN.md — Jeff: Hyper-Cheap Local-vs-Frontier Router, Then General Compute Allocator
+# PLAN.md — ElJefe: Hyper-Cheap Local-vs-Frontier Router, Then General Compute Allocator
 
 ## 0. Mission
 
-Build **Jeff**, a very small probabilistic model whose first job is:
+Build **ElJefe**, a very small probabilistic model whose first job is:
 
 > Given a user request and the capabilities of the local runtime, estimate whether **Gemma 4 E4B running locally** is sufficient or whether the request is worth escalating to a **frontier model**.
 
-Jeff is **not** a chat model. Jeff does not answer the user's question. Jeff estimates the **marginal value of additional compute**.
+ElJefe is **not** a chat model. ElJefe does not answer the user's question. ElJefe estimates the **marginal value of additional compute**.
 
 The initial product contract is deliberately narrow:
 
@@ -14,7 +14,7 @@ The initial product contract is deliberately narrow:
 request
    |
    v
- Jeff-0
+ ElJefe-0
    |
    +--------------------+
    |                    |
@@ -41,20 +41,20 @@ The long-term abstraction is:
 # 1. Core design principles
 
 1. **Local is the default prior.**
-   Jeff is not choosing symmetrically between models. It should keep work local unless there is evidence that escalation is worthwhile.
+   ElJefe is not choosing symmetrically between models. It should keep work local unless there is evidence that escalation is worthwhile.
 
 2. **Predict; do not decide policy inside the model.**
-   Jeff outputs calibrated probabilities / expected gains. A deterministic harness applies the user's cost, quality, privacy, and latency policy.
+   ElJefe outputs calibrated probabilities / expected gains. A deterministic harness applies the user's cost, quality, privacy, and latency policy.
 
 3. **Start with supervised learning, not RL.**
-   This is initially a selective-prediction / cost-sensitive classification problem. RL is unnecessary until Jeff controls sequential compute allocation.
+   This is initially a selective-prediction / cost-sensitive classification problem. RL is unnecessary until ElJefe controls sequential compute allocation.
 
 4. **Train on counterfactual outcomes.**
    For a training prompt, obtain both:
    - the local Gemma 4 E4B result;
    - the frontier result.
 
-   Score both and teach Jeff the difference.
+   Score both and teach ElJefe the difference.
 
 5. **Measure economic performance, not just classifier accuracy.**
    A router can be "accurate" while still making expensive mistakes. The primary outputs are:
@@ -69,7 +69,7 @@ The long-term abstraction is:
    Unit tests, exact answers, schema validation, math checks, tool-call validation, and reference answers should be preferred to LLM judges.
 
 7. **Treat privacy as a hard rule, not a learned preference.**
-   Requests or files marked `local_only` must never be uploaded to a frontier service regardless of Jeff's probability.
+   Requests or files marked `local_only` must never be uploaded to a frontier service regardless of ElJefe's probability.
 
 ---
 
@@ -93,7 +93,7 @@ Q_frontier  = measured quality of frontier model
 delta_q     = Q_frontier - Q_local
 ```
 
-Jeff should learn at least two targets:
+ElJefe should learn at least two targets:
 
 ```text
 P(local_sufficient | request, runtime)
@@ -125,7 +125,7 @@ QUALITY-FIRST:
     use frontier only if P(local_sufficient) < 0.98
 ```
 
-Do not bake those thresholds into Jeff.
+Do not bake those thresholds into ElJefe.
 
 ---
 
@@ -169,15 +169,15 @@ local:
 
 For the first experiment, use **one** frontier model consistently. Do not mix several frontier models into one target until the router is working.
 
-Later Jeff can condition on the frontier candidate as another feature.
+Later ElJefe can condition on the frontier candidate as another feature.
 
 ---
 
-# 4. What Jeff sees
+# 4. What ElJefe sees
 
-## Jeff-0: pre-inference router
+## ElJefe-0: pre-inference router
 
-Jeff-0 should only need information available before invoking E4B:
+ElJefe-0 should only need information available before invoking E4B:
 
 ```json
 {
@@ -208,11 +208,11 @@ Useful derived features for cheap baselines:
 - lexical complexity;
 - question/task family prediction.
 
-## Jeff-1: post-local verifier
+## ElJefe-1: post-local verifier
 
-Only build this after Jeff-0.
+Only build this after ElJefe-0.
 
-Jeff-1 sees:
+ElJefe-1 sees:
 
 ```json
 {
@@ -234,18 +234,18 @@ If available from the runtime, optionally include:
 - tool-call parse success;
 - whether the model expressed uncertainty.
 
-Jeff-1 predicts whether the **actual E4B answer** is sufficient.
+ElJefe-1 predicts whether the **actual E4B answer** is sufficient.
 
 This permits a three-way flow:
 
 ```text
-              Jeff-0
+              ElJefe-0
           /      |       \
       LOCAL    UNSURE   FRONTIER
         |        |         |
        E4B      E4B      frontier
                  |
-               Jeff-1
+               ElJefe-1
               /      \
            ACCEPT   ESCALATE
 ```
@@ -382,7 +382,7 @@ If the two judgments disagree, mark the row low-confidence or send it to a stron
 
 ## Phase C — hard boundary mining
 
-Once Jeff v0 exists, run it over a large unlabeled prompt pool.
+Once ElJefe v0 exists, run it over a large unlabeled prompt pool.
 
 Prefer labeling prompts where:
 
@@ -394,7 +394,7 @@ or where ensemble members disagree.
 
 This is active learning.
 
-Do **not** keep paying frontier-model costs for examples Jeff already sees as trivial.
+Do **not** keep paying frontier-model costs for examples ElJefe already sees as trivial.
 
 ---
 
@@ -420,7 +420,7 @@ Mac calibration test
 - hold out entire sources/task families for an OOD test;
 - do not let identical templates with only numbers/names changed cross splits.
 
-The OOD split is important because the product will receive tasks Jeff did not see during training.
+The OOD split is important because the product will receive tasks ElJefe did not see during training.
 
 ---
 
@@ -526,7 +526,7 @@ embedding + metadata -> expected delta_q
 
 This is likely the highest-value baseline.
 
-## Jeff v0 — fine-tuned tiny encoder
+## ElJefe v0 — fine-tuned tiny encoder
 
 Only proceed if the frozen embedding model leaves meaningful routing performance on the table.
 
@@ -559,7 +559,7 @@ Do not begin with a generative LM.
 
 # 10. Calibration
 
-Jeff's probabilities must mean something.
+ElJefe's probabilities must mean something.
 
 A router that outputs `0.95` but is only correct 70% of the time is dangerous.
 
@@ -622,13 +622,13 @@ Use the actual provider's token pricing at evaluation time.
 
 ### False-local rate
 
-Cases where Jeff selected E4B but frontier would have produced a materially better answer.
+Cases where ElJefe selected E4B but frontier would have produced a materially better answer.
 
 This is the critical error class.
 
 ### False-frontier rate
 
-Cases where Jeff paid for frontier but E4B would have been sufficient.
+Cases where ElJefe paid for frontier but E4B would have been sufficient.
 
 This wastes money but usually does not hurt answer quality.
 
@@ -638,7 +638,7 @@ Construct an oracle using the measured counterfactual outcomes.
 
 The oracle knows the actual `delta_q`.
 
-Compare Jeff's utility to that oracle.
+Compare ElJefe's utility to that oracle.
 
 This tells us how much routing value remains unexploited.
 
@@ -660,15 +660,15 @@ Plot:
 - heuristic router;
 - TF-IDF baseline;
 - frozen embedding router;
-- fine-tuned Jeff;
+- fine-tuned ElJefe;
 - oracle.
 
-The product is interesting if Jeff moves substantially toward the oracle frontier.
+The product is interesting if ElJefe moves substantially toward the oracle frontier.
 
 A headline metric should look like:
 
 ```text
-"At >= X% of frontier quality, Jeff keeps Y% of requests local."
+"At >= X% of frontier quality, ElJefe keeps Y% of requests local."
 ```
 
 Do not pick X/Y in advance. Measure them.
@@ -699,49 +699,49 @@ colab version
 
 Provision a persistent development session.
 
-For Gemma 4 E4B generation, prefer an L4 or better because the canonical checkpoint is considerably larger than Jeff itself:
+For Gemma 4 E4B generation, prefer an L4 or better because the canonical checkpoint is considerably larger than ElJefe itself:
 
 ```bash
-colab new -s jeff --gpu L4 --high-mem
-colab status -s jeff
+colab new -s eljefe --gpu L4 --high-mem
+colab status -s eljefe
 ```
 
-For Jeff-only classifier training, a T4-class runtime should normally be sufficient.
+For ElJefe-only classifier training, a T4-class runtime should normally be sufficient.
 
 Install dependencies:
 
 ```bash
-colab install -s jeff -r requirements.txt
+colab install -s eljefe -r requirements.txt
 ```
 
 Execute a local Python file remotely:
 
 ```bash
-colab exec -s jeff -f scripts/00_smoke_test.py
+colab exec -s eljefe -f scripts/00_smoke_test.py
 ```
 
 Open a raw terminal if needed:
 
 ```bash
-colab console -s jeff
+colab console -s eljefe
 ```
 
 Upload files:
 
 ```bash
-colab upload -s jeff configs/v0.yaml /content/jeff/configs/v0.yaml
+colab upload -s eljefe configs/v0.yaml /content/eljefe/configs/v0.yaml
 ```
 
 Download artifacts:
 
 ```bash
-colab download -s jeff /content/jeff/artifacts/jeff-v0.tar.gz ./artifacts/jeff-v0.tar.gz
+colab download -s eljefe /content/eljefe/artifacts/eljefe-v0.tar.gz ./artifacts/eljefe-v0.tar.gz
 ```
 
 Stop the VM when finished:
 
 ```bash
-colab stop -s jeff
+colab stop -s eljefe
 ```
 
 For reproducible one-shot jobs, use:
@@ -760,7 +760,7 @@ Do not put API keys into committed files or commands that will be archived in lo
 Create:
 
 ```text
-jeff/
+eljefe/
 ├── PLAN.md
 ├── README.md
 ├── requirements.txt
@@ -801,7 +801,7 @@ jeff/
 │   ├── 15_export_router.py
 │   └── 16_mac_calibration.py
 ├── src/
-│   └── jeff/
+│   └── eljefe/
 │       ├── schema.py
 │       ├── datasets.py
 │       ├── local_model.py
@@ -881,8 +881,8 @@ SMOKE_TEST_OK
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/01_fetch_tasks.py
-colab exec -s jeff -f scripts/02_normalize_tasks.py
+colab exec -s eljefe -f scripts/01_fetch_tasks.py
+colab exec -s eljefe -f scripts/02_normalize_tasks.py
 ```
 
 Normalize all sources to:
@@ -908,7 +908,7 @@ Do not allow dataset-specific logic to leak into later stages.
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/03_generate_e4b.py
+colab exec -s eljefe -f scripts/03_generate_e4b.py
 ```
 
 Requirements:
@@ -931,7 +931,7 @@ Checkpoint frequently.
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/04_generate_frontier.py
+colab exec -s eljefe -f scripts/04_generate_frontier.py
 ```
 
 Requirements:
@@ -963,13 +963,13 @@ If the budget limit is reached, stop cleanly and retain all completed rows.
 Objective:
 
 ```bash
-colab exec -s jeff -f scripts/05_grade_objective.py
+colab exec -s eljefe -f scripts/05_grade_objective.py
 ```
 
 Open-ended:
 
 ```bash
-colab exec -s jeff -f scripts/06_grade_open.py
+colab exec -s eljefe -f scripts/06_grade_open.py
 ```
 
 Each scored example must contain:
@@ -991,7 +991,7 @@ Reject or quarantine rows with broken graders.
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/07_build_router_dataset.py
+colab exec -s eljefe -f scripts/07_build_router_dataset.py
 ```
 
 Tasks:
@@ -1012,19 +1012,19 @@ Do not oversample until after the natural distribution has been recorded.
 Train TF-IDF:
 
 ```bash
-colab exec -s jeff -f scripts/08_train_tfidf.py
+colab exec -s eljefe -f scripts/08_train_tfidf.py
 ```
 
 Generate semantic embeddings:
 
 ```bash
-colab exec -s jeff -f scripts/09_embed_prompts.py
+colab exec -s eljefe -f scripts/09_embed_prompts.py
 ```
 
 Train embedding router:
 
 ```bash
-colab exec -s jeff -f scripts/10_train_embedding_router.py
+colab exec -s eljefe -f scripts/10_train_embedding_router.py
 ```
 
 At this checkpoint answer:
@@ -1035,12 +1035,12 @@ If the embedding router approaches oracle utility closely, do **not** train a la
 
 ---
 
-## Stage 7 — train Jeff v0
+## Stage 7 — train ElJefe v0
 
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/11_train_minilm_router.py
+colab exec -s eljefe -f scripts/11_train_minilm_router.py
 ```
 
 Outputs:
@@ -1063,7 +1063,7 @@ Use early stopping based on routing utility / validation loss, not raw training 
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/12_calibrate.py
+colab exec -s eljefe -f scripts/12_calibrate.py
 ```
 
 Fit the chosen calibrator on validation only.
@@ -1077,7 +1077,7 @@ Persist it as a separate artifact.
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/13_evaluate.py
+colab exec -s eljefe -f scripts/13_evaluate.py
 ```
 
 Produce:
@@ -1091,7 +1091,7 @@ error_analysis.csv
 report.md
 ```
 
-The report must include failures where Jeff confidently chose local and was wrong.
+The report must include failures where ElJefe confidently chose local and was wrong.
 
 These are more informative than aggregate accuracy.
 
@@ -1104,7 +1104,7 @@ If v0 demonstrates useful routing signal, do not simply enlarge the dataset unif
 Run:
 
 ```bash
-colab exec -s jeff -f scripts/14_active_learning.py
+colab exec -s eljefe -f scripts/14_active_learning.py
 ```
 
 Select examples by:
@@ -1138,7 +1138,7 @@ After Colab training, create a fixed calibration set.
 Download it:
 
 ```bash
-colab download -s jeff /content/jeff/data/router/mac_calibration.jsonl ./data/mac_calibration.jsonl
+colab download -s eljefe /content/eljefe/data/router/mac_calibration.jsonl ./data/mac_calibration.jsonl
 ```
 
 Run the exact local production model on the Mac.
@@ -1154,7 +1154,7 @@ memory pressure
 context failures
 ```
 
-Use these results to recalibrate Jeff's policy.
+Use these results to recalibrate ElJefe's policy.
 
 Do not necessarily retrain the whole encoder. First try adjusting:
 
@@ -1167,10 +1167,10 @@ Do not necessarily retrain the whole encoder. First try adjusting:
 
 # 19. Export
 
-If MiniLM/encoder Jeff wins:
+If MiniLM/encoder ElJefe wins:
 
 ```bash
-colab exec -s jeff -f scripts/15_export_router.py
+colab exec -s eljefe -f scripts/15_export_router.py
 ```
 
 Export at least one portable representation:
@@ -1187,13 +1187,13 @@ Then test:
 
 The winning deployment is the **smallest representation whose routing curve is materially unchanged**.
 
-Jeff should be cheap enough that routing overhead is negligible compared with invoking E4B.
+ElJefe should be cheap enough that routing overhead is negligible compared with invoking E4B.
 
 ---
 
-# 20. Jeff-1: post-E4B verifier
+# 20. ElJefe-1: post-E4B verifier
 
-Only start after Jeff-0 has been evaluated.
+Only start after ElJefe-0 has been evaluated.
 
 Dataset:
 
@@ -1223,18 +1223,18 @@ E[frontier_gain_after_seeing_answer]
 Then compare:
 
 ```text
-Jeff-0 only
+ElJefe-0 only
 vs
-Jeff-0 + Jeff-1
+ElJefe-0 + ElJefe-1
 ```
 
-Measure whether Jeff-1 lowers false-local errors without causing too many additional frontier calls.
+Measure whether ElJefe-1 lowers false-local errors without causing too many additional frontier calls.
 
 ---
 
-# 21. Hard-routing rules outside Jeff
+# 21. Hard-routing rules outside ElJefe
 
-The harness must be allowed to override Jeff.
+The harness must be allowed to override ElJefe.
 
 Examples:
 
@@ -1254,7 +1254,7 @@ These are capability constraints, not learned preferences.
 
 # 22. Transition to subagents
 
-Once local-vs-frontier routing works, generalize Jeff from:
+Once local-vs-frontier routing works, generalize ElJefe from:
 
 ```text
 state -> frontier gain
@@ -1330,7 +1330,7 @@ Training row:
 }
 ```
 
-Then Jeff learns:
+Then ElJefe learns:
 
 ```text
 (state, "spawn_researcher") -> E[delta_q]
@@ -1354,7 +1354,7 @@ Do not train only from actions the current policy happened to choose.
 That creates selection bias:
 
 ```text
-Jeff chooses researcher only for hard tasks
+ElJefe chooses researcher only for hard tasks
 -> logs make researcher look associated with hard/low-quality outcomes
 -> model cannot learn the true counterfactual benefit
 ```
@@ -1382,7 +1382,7 @@ For offline experiments, even better: explicitly fork the same state and run bot
 
 ---
 
-# 25. Subagent Jeff architecture
+# 25. Subagent ElJefe architecture
 
 Represent each candidate action separately:
 
@@ -1412,7 +1412,7 @@ New actions can be represented using:
 Long term:
 
 ```text
-Jeff(state, action) -> utility distribution
+ElJefe(state, action) -> utility distribution
 ```
 
 The harness scores every permissible action.
@@ -1442,7 +1442,7 @@ spawn_critics(n=5)
 with:
 
 ```python
-while jeff.expected_gain(next_critic, state) > threshold:
+while eljefe.expected_gain(next_critic, state) > threshold:
     spawn_critic()
 ```
 
@@ -1457,7 +1457,7 @@ After each step:
 ```text
 current research state
        |
-      Jeff
+      ElJefe
      /    \
  STOP    CONTINUE
 ```
@@ -1472,11 +1472,11 @@ one more research step
 
 Measure the improvement in final answer quality.
 
-This turns Jeff into a learned stopping rule for inference-time computation.
+This turns ElJefe into a learned stopping rule for inference-time computation.
 
 ---
 
-# 28. Eventual unified Jeff schema
+# 28. Eventual unified ElJefe schema
 
 Long-term input:
 
@@ -1520,7 +1520,7 @@ utility =
 
 Choose the best legal positive-utility action.
 
-Jeff remains a predictor.
+ElJefe remains a predictor.
 
 ---
 
@@ -1550,7 +1550,7 @@ supervised regression/classification
 
 # 30. Minimum viable experiment
 
-If the goal is to establish whether Jeff is real as cheaply as possible:
+If the goal is to establish whether ElJefe is real as cheaply as possible:
 
 ## Dataset
 
@@ -1584,7 +1584,7 @@ Produce the cost-quality Pareto curve.
 
 ### Go criterion
 
-Proceed to a custom/fine-tuned Jeff if the learned router materially beats:
+Proceed to a custom/fine-tuned ElJefe if the learned router materially beats:
 
 ```text
 always-local
@@ -1598,7 +1598,7 @@ and captures a meaningful fraction of the oracle routing gain.
 If prompt-only routing barely beats heuristics:
 
 1. add task metadata;
-2. train Jeff-1 using the actual E4B answer;
+2. train ElJefe-1 using the actual E4B answer;
 3. test local verifier signals;
 4. only then consider a larger router.
 
@@ -1618,11 +1618,11 @@ Run and record:
 | E3 | TF-IDF + logistic | prompt | sufficient | lexical baseline |
 | E4 | Frozen MiniLM + LightGBM | prompt | sufficient | semantic cheap baseline |
 | E5 | Frozen MiniLM + regression | prompt | delta_q | marginal-gain baseline |
-| E6 | Fine-tuned MiniLM dual-head | prompt | sufficient + delta_q | Jeff v0 |
-| E7 | Jeff v0 + calibration | prompt | calibrated | production candidate |
-| E8 | Jeff-1 | prompt + E4B answer | post-answer sufficiency | verifier |
-| E9 | Jeff-0 + Jeff-1 cascade | both | system utility | full local/frontier system |
-| E10 | Action Jeff | state + action | marginal action gain | first subagent experiment |
+| E6 | Fine-tuned MiniLM dual-head | prompt | sufficient + delta_q | ElJefe v0 |
+| E7 | ElJefe v0 + calibration | prompt | calibrated | production candidate |
+| E8 | ElJefe-1 | prompt + E4B answer | post-answer sufficiency | verifier |
+| E9 | ElJefe-0 + ElJefe-1 cascade | both | system utility | full local/frontier system |
+| E10 | Action ElJefe | state + action | marginal action gain | first subagent experiment |
 
 ---
 
@@ -1709,7 +1709,7 @@ The end-to-end benchmark should simulate a user workload.
 For each prompt:
 
 ```text
-1. Jeff receives request.
+1. ElJefe receives request.
 2. Harness selects local/frontier.
 3. Selected model produces answer.
 4. Answer is graded.
@@ -1723,7 +1723,7 @@ Always E4B
 Always frontier
 Random route matched for frontier-call rate
 Simple heuristic
-Jeff
+ElJefe
 Oracle
 ```
 
@@ -1744,7 +1744,7 @@ artifacts/
 ├── calibration_curve.png
 ├── error_analysis.csv
 ├── metrics.json
-├── jeff-v0/
+├── eljefe-v0/
 │   ├── model.*
 │   ├── tokenizer/
 │   ├── calibrator.*
@@ -1755,13 +1755,13 @@ artifacts/
 
 `report.md` must answer:
 
-1. Can prompt-only Jeff predict E4B failure?
+1. Can prompt-only ElJefe predict E4B failure?
 2. How much frontier usage can be removed at fixed quality-retention levels?
 3. Which task families still require frontier most often?
-4. How well calibrated are Jeff's probabilities?
-5. How close is Jeff to the oracle router?
+4. How well calibrated are ElJefe's probabilities?
+5. How close is ElJefe to the oracle router?
 6. Is a fine-tuned encoder materially better than the frozen-embedding baseline?
-7. Does Jeff-1 justify its extra local inference?
+7. Does ElJefe-1 justify its extra local inference?
 8. What should be tried next?
 
 ---
@@ -1784,14 +1784,14 @@ Execute in this order and do not skip cheap baselines:
 [ ] TF-IDF router
 [ ] frozen MiniLM router
 [ ] threshold sweep + Pareto curve
-[ ] decide whether a fine-tuned Jeff is warranted
-[ ] train dual-head Jeff v0
+[ ] decide whether a fine-tuned ElJefe is warranted
+[ ] train dual-head ElJefe v0
 [ ] calibrate
 [ ] error analysis
 [ ] active-learning round
 [ ] Mac calibration using actual local E4B build
 [ ] export smallest acceptable router
-[ ] build Jeff-1 only if false-local errors warrant it
+[ ] build ElJefe-1 only if false-local errors warrant it
 [ ] begin one-action subagent experiment only after local/frontier routing is validated
 ```
 
@@ -1804,51 +1804,51 @@ From the Mac:
 ```bash
 uv tool install google-colab-cli
 
-colab new -s jeff --gpu L4 --high-mem
-colab status -s jeff
+colab new -s eljefe --gpu L4 --high-mem
+colab status -s eljefe
 
-colab install -s jeff -r requirements.txt
+colab install -s eljefe -r requirements.txt
 
-colab exec -s jeff -f scripts/00_smoke_test.py
-colab exec -s jeff -f scripts/01_fetch_tasks.py
-colab exec -s jeff -f scripts/02_normalize_tasks.py
-colab exec -s jeff -f scripts/03_generate_e4b.py
-colab exec -s jeff -f scripts/04_generate_frontier.py
-colab exec -s jeff -f scripts/05_grade_objective.py
-colab exec -s jeff -f scripts/07_build_router_dataset.py
-colab exec -s jeff -f scripts/08_train_tfidf.py
-colab exec -s jeff -f scripts/09_embed_prompts.py
-colab exec -s jeff -f scripts/10_train_embedding_router.py
-colab exec -s jeff -f scripts/13_evaluate.py
+colab exec -s eljefe -f scripts/00_smoke_test.py
+colab exec -s eljefe -f scripts/01_fetch_tasks.py
+colab exec -s eljefe -f scripts/02_normalize_tasks.py
+colab exec -s eljefe -f scripts/03_generate_e4b.py
+colab exec -s eljefe -f scripts/04_generate_frontier.py
+colab exec -s eljefe -f scripts/05_grade_objective.py
+colab exec -s eljefe -f scripts/07_build_router_dataset.py
+colab exec -s eljefe -f scripts/08_train_tfidf.py
+colab exec -s eljefe -f scripts/09_embed_prompts.py
+colab exec -s eljefe -f scripts/10_train_embedding_router.py
+colab exec -s eljefe -f scripts/13_evaluate.py
 ```
 
 Only if the baseline results justify it:
 
 ```bash
-colab exec -s jeff -f scripts/11_train_minilm_router.py
-colab exec -s jeff -f scripts/12_calibrate.py
-colab exec -s jeff -f scripts/13_evaluate.py
-colab exec -s jeff -f scripts/14_active_learning.py
-colab exec -s jeff -f scripts/15_export_router.py
+colab exec -s eljefe -f scripts/11_train_minilm_router.py
+colab exec -s eljefe -f scripts/12_calibrate.py
+colab exec -s eljefe -f scripts/13_evaluate.py
+colab exec -s eljefe -f scripts/14_active_learning.py
+colab exec -s eljefe -f scripts/15_export_router.py
 ```
 
 Retrieve artifacts:
 
 ```bash
-colab download -s jeff /content/jeff/artifacts/jeff-v0.tar.gz ./artifacts/jeff-v0.tar.gz
+colab download -s eljefe /content/eljefe/artifacts/eljefe-v0.tar.gz ./artifacts/eljefe-v0.tar.gz
 ```
 
 End session:
 
 ```bash
-colab stop -s jeff
+colab stop -s eljefe
 ```
 
 ---
 
 # 39. Definition of success
 
-Jeff v0 is successful if it demonstrates a stable, calibrated cost-quality frontier where a substantial fraction of requests can remain on Gemma 4 E4B while retaining nearly all of the measured application quality of the always-frontier baseline.
+ElJefe v0 is successful if it demonstrates a stable, calibrated cost-quality frontier where a substantial fraction of requests can remain on Gemma 4 E4B while retaining nearly all of the measured application quality of the always-frontier baseline.
 
 The exact threshold is a product choice, not a training label.
 
@@ -1868,7 +1868,7 @@ subagent continuation
 parallel-agent width
 ```
 
-At that point Jeff becomes a general **inference-time compute allocator** rather than merely a local/cloud router.
+At that point ElJefe becomes a general **inference-time compute allocator** rather than merely a local/cloud router.
 
 ---
 

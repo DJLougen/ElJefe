@@ -2,7 +2,7 @@
 """Stage 4a — grade objective tasks -> data/scores/scored.jsonl.
 
 Joins tasks with local + frontier generations, grades both answers via
-jeff.graders.grade, and quarantines rows missing a generation or whose
+eljefe.graders.grade, and quarantines rows missing a generation or whose
 grader raised.
 """
 
@@ -16,11 +16,11 @@ import os
 try:
     ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (ROOT / 'src').exists():
         ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
-from jeff.cli import parse_args
+from eljefe.cli import parse_args
 
 
 def main() -> int:
@@ -43,9 +43,9 @@ def main() -> int:
     )
     args = parse_args(parser)
 
-    from jeff.datasets import load_tasks, update_manifest
-    from jeff.graders import grade
-    from jeff.schema import Generation, ScoredRow, read_jsonl, write_jsonl
+    from eljefe.datasets import load_tasks, update_manifest
+    from eljefe.graders import grade
+    from eljefe.schema import Generation, ScoredRow, read_jsonl, write_jsonl
 
     tasks = {t.id: t for t in load_tasks(args.tasks)}
     local_gens = {g.task_id: g for g in read_jsonl(args.local, Generation)}

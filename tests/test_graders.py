@@ -2,8 +2,8 @@
 
 import pytest
 
-from jeff.graders import GRADERS, GradeResult, grade
-from jeff.schema import Task
+from eljefe.graders import GRADERS, GradeResult, grade
+from eljefe.schema import Task
 
 
 def _task(grader: str, reference=None, **metadata) -> Task:
@@ -245,7 +245,7 @@ def test_llm_judge_not_implemented():
 
 
 def test_registry_covers_all_grader_names():
-    from jeff.schema import GraderName
+    from eljefe.schema import GraderName
     import typing
 
     assert set(GRADERS) == set(typing.get_args(GraderName))

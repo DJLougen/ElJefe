@@ -18,11 +18,11 @@ import os
 try:
     ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (ROOT / 'src').exists():
         ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
-from jeff.cli import parse_args
+from eljefe.cli import parse_args
 
 
 def main() -> int:
@@ -50,8 +50,8 @@ def main() -> int:
     import pandas as pd
     import yaml
 
-    from jeff.datasets import load_tasks, split_rows, update_manifest
-    from jeff.schema import ScoredRow, read_jsonl, write_jsonl
+    from eljefe.datasets import load_tasks, split_rows, update_manifest
+    from eljefe.schema import ScoredRow, read_jsonl, write_jsonl
 
     cfg = yaml.safe_load(Path(args.config).read_text())
     scored = list(read_jsonl(args.scored, ScoredRow))
@@ -95,7 +95,7 @@ def main() -> int:
         return deltas_sorted[min(len(deltas_sorted) - 1, int(p * len(deltas_sorted)))]
 
     lines = [
-        "# Jeff router dataset report",
+        "# ElJefe router dataset report",
         "",
         f"- rows: {len(rows)}",
         f"- quality_floor: {cfg.get('quality_floor')}",

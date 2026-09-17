@@ -1,4 +1,4 @@
-"""Cheap pre-inference prompt features for Jeff-0 (plan §4).
+"""Cheap pre-inference prompt features for ElJefe-0 (plan §4).
 
 Pure stdlib — no model downloads, no heavy deps. Flags are emitted as 0/1
 ints so the whole dict feeds straight into a tabular model.

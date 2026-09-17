@@ -18,11 +18,11 @@ import os
 try:
     ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (ROOT / 'src').exists():
         ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
-from jeff.cli import parse_args
+from eljefe.cli import parse_args
 
 
 def main() -> int:
@@ -64,7 +64,7 @@ def main() -> int:
         from transformers import AutoTokenizer
 
         tok = AutoTokenizer.from_pretrained("hf-internal-testing/tiny-random-gpt2")
-        ids = tok("hello jeff")["input_ids"]
+        ids = tok("hello eljefe")["input_ids"]
         report["tokenizer"] = {
             "model": "hf-internal-testing/tiny-random-gpt2",
             "encoded_len": len(ids),

@@ -1,7 +1,7 @@
-"""Hard-routing rules outside Jeff (plan §21).
+"""Hard-routing rules outside ElJefe (plan §21).
 
 These are capability constraints, not learned preferences. ``hard_route``
-returns a forced route or ``None``; ``apply_policy`` layers Jeff's
+returns a forced route or ``None``; ``apply_policy`` layers ElJefe's
 probability on top with a configurable threshold.
 """
 

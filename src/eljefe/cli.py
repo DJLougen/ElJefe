@@ -1,13 +1,13 @@
-"""Kernel-safe argument parsing for Jeff scripts.
+"""Kernel-safe argument parsing for ElJefe scripts.
 
 `colab exec -f script.py` runs inside a Jupyter kernel whose sys.argv is the
 kernel launcher's (e.g. `colab_kernel_launcher.py -f kernel-xxx.json`), so
 plain parser.parse_args() crashes. There is also no way to pass script args
-through `colab exec`, so JEFF_<ARG> environment variables act as overrides
+through `colab exec`, so ELJEFE_<ARG> environment variables act as overrides
 (kernel env persists across exec calls in a session).
 
 Usage in scripts: replace `parser.parse_args()` with
-`args = jeff.cli.parse_args(parser)` (or `from jeff.cli import parse_args`).
+`args = eljefe.cli.parse_args(parser)` (or `from eljefe.cli import parse_args`).
 """
 
 from __future__ import annotations
@@ -36,10 +36,10 @@ def _kernel_argv() -> list[str]:
     return out
 
 
-def parse_args(parser: argparse.ArgumentParser, env_prefix: str = "JEFF_") -> argparse.Namespace:
+def parse_args(parser: argparse.ArgumentParser, env_prefix: str = "ELJEFE_") -> argparse.Namespace:
     """parse_known_args on kernel-stripped argv, then apply env overrides.
 
-    For every optional --foo-bar, env var JEFF_FOO_BAR (uppercased, dashes to
+    For every optional --foo-bar, env var ELJEFE_FOO_BAR (uppercased, dashes to
     underscores) overrides the parsed value when set. Values are coerced with
     the argument's `type` callable when present, else kept as strings; flags
     (store_true/store_false) accept 1/true/yes/on.
@@ -59,7 +59,7 @@ def parse_args(parser: argparse.ArgumentParser, env_prefix: str = "JEFF_") -> ar
             try:
                 setattr(args, action.dest, action.type(raw))
             except Exception:
-                print(f"[jeff.cli] ignoring invalid {env_name}={raw!r}")
+                print(f"[eljefe.cli] ignoring invalid {env_name}={raw!r}")
         else:
             setattr(args, action.dest, raw)
     return args

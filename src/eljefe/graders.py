@@ -1,4 +1,4 @@
-"""Deterministic graders for Jeff tasks (plan §8 grading hierarchy).
+"""Deterministic graders for ElJefe tasks (plan §8 grading hierarchy).
 
 Every grader maps ``(Task, answer_text) -> GradeResult`` and never raises on
 malformed input: garbage in, score 0.0 out with evidence in ``detail``.
@@ -198,7 +198,7 @@ def grade_code_tests(task: Task, answer: str) -> GradeResult:
     if not code.strip():
         return _ok(0.0, error="no code extracted")
     program = code + "\n\n" + test_code + "\n"
-    tmpdir = tempfile.mkdtemp(prefix="jeff_grade_")
+    tmpdir = tempfile.mkdtemp(prefix="eljefe_grade_")
     path = os.path.join(tmpdir, "candidate.py")
     try:
         with open(path, "w", encoding="utf-8") as f:

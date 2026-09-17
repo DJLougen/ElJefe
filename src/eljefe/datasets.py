@@ -1,4 +1,4 @@
-"""Dataset acquisition, normalization, and group-aware splitting for Jeff.
+"""Dataset acquisition, normalization, and group-aware splitting for ElJefe.
 
 All HuggingFace imports are lazy (inside functions) so this module imports
 with only light deps installed.

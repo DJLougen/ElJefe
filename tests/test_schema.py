@@ -2,7 +2,7 @@
 
 import json
 
-from jeff.schema import (
+from eljefe.schema import (
     Generation,
     RouterRow,
     ScoredRow,

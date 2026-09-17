@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage 11 — export Jeff v0 (MiniLM dual-head) to ONNX (plan §19).
+"""Stage 11 — export ElJefe v0 (MiniLM dual-head) to ONNX (plan §19).
 
 Exports the encoder + heads to ONNX, optionally produces fp16 and
 dynamic-int8 variants, and verifies routing-curve parity against the
@@ -17,18 +17,18 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", default=str(REPO_ROOT / "configs" / "router_minilm.yaml"))
     p.add_argument("--data-path", default=str(REPO_ROOT / "data" / "router" / "router_dataset.parquet"))
-    p.add_argument("--model-dir", default=str(REPO_ROOT / "artifacts" / "models" / "jeff-v0"))
+    p.add_argument("--model-dir", default=str(REPO_ROOT / "artifacts" / "models" / "eljefe-v0"))
     p.add_argument("--out-dir", default=None,
                    help="default: <model-dir>/onnx")
     p.add_argument("--fp16", action="store_true", help="also write an fp16 ONNX")
@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
                    help="also write a dynamic-int8 ONNX")
     p.add_argument("--max-rows", type=int, default=512,
                    help="cap validation rows used for the parity check")
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def main() -> None:
@@ -46,7 +46,7 @@ def main() -> None:
     import yaml
     from torch import nn
 
-    from jeff.router import (
+    from eljefe.router import (
         Router,
         load_router_dataset,
         update_manifest,

@@ -11,11 +11,11 @@ import os
 try:
     ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (ROOT / 'src').exists():
         ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
-from jeff.cli import parse_args
+from eljefe.cli import parse_args
 
 
 def main() -> int:
@@ -34,8 +34,8 @@ def main() -> int:
 
     import yaml
 
-    from jeff.datasets import fetch_source, update_manifest
-    from jeff.schema import write_jsonl
+    from eljefe.datasets import fetch_source, update_manifest
+    from eljefe.schema import write_jsonl
 
     cfg = yaml.safe_load(Path(args.config).read_text())
     sources_cfg = cfg.get("sources", {}) or {}

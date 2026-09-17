@@ -21,16 +21,16 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 LEARNED_DIRS = {
     "tfidf": "baselines/tfidf",
     "embedding": "baselines/embedding",
-    "minilm": "models/jeff-v0",
+    "minilm": "models/eljefe-v0",
 }
 ENDPOINTS = ("always_local", "always_frontier")
 RETENTION_TARGETS = (0.95, 0.98, 0.99, 1.0)
@@ -52,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--threshold", type=float, default=0.9,
                    help="operating threshold for headline metrics")
     p.add_argument("--max-rows", type=int, default=None)
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def brier_ece(p, y, n_bins: int = 10) -> tuple[float, float]:
@@ -124,9 +124,9 @@ def main() -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    from jeff.calibration import Calibrator
-    from jeff.metrics import oracle_route, routing_metrics, threshold_sweep
-    from jeff.router import (
+    from eljefe.calibration import Calibrator
+    from eljefe.metrics import oracle_route, routing_metrics, threshold_sweep
+    from eljefe.router import (
         Router,
         extract_row_features,
         labels_for,
@@ -259,7 +259,7 @@ def main() -> None:
                marker="*", s=180, label="oracle", zorder=6)
     ax.set_xlabel("frontier rate")
     ax.set_ylabel("quality retention (vs always-frontier)")
-    ax.set_title(f"Jeff routing Pareto — split={split_used}")
+    ax.set_title(f"ElJefe routing Pareto — split={split_used}")
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
     fig.tight_layout()
@@ -366,7 +366,7 @@ def main() -> None:
         pass
 
     lines = [
-        "# Jeff v0 evaluation report",
+        "# ElJefe v0 evaluation report",
         "",
         f"- split: `{split_used}` (n={len(eval_rows)})",
         f"- operating threshold: {args.threshold}",
@@ -377,7 +377,7 @@ def main() -> None:
         "",
         md_table(comp),
         "",
-        "## 1. Can prompt-only Jeff predict E4B failure?",
+        "## 1. Can prompt-only ElJefe predict E4B failure?",
         "",
         f"Best router `{best}` reaches quality_retention="
         f"{bm['quality_retention']:.3f} at frontier_rate="

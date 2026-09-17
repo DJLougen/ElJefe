@@ -1,7 +1,7 @@
 """Hard-routing rules (plan §21) and threshold policy."""
 
-from jeff.policy import apply_policy, hard_route
-from jeff.schema import RouterInput, RouterOutput
+from eljefe.policy import apply_policy, hard_route
+from eljefe.schema import RouterInput, RouterOutput
 
 
 def _inp(**kw) -> RouterInput:

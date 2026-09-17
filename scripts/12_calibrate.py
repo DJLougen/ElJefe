@@ -18,17 +18,17 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 # router name -> candidate artifact dir (relative to --artifacts-dir)
 ROUTER_DIRS = {
     "tfidf": "baselines/tfidf",
     "embedding": "baselines/embedding",
-    "minilm": "models/jeff-v0",
+    "minilm": "models/eljefe-v0",
 }
 
 
@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
                    choices=sorted(ROUTER_DIRS),
                    help="calibrate only these routers (default: all found)")
     p.add_argument("--max-rows", type=int, default=None)
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def brier_ece(p, y, n_bins: int = 10) -> tuple[float, float]:
@@ -69,8 +69,8 @@ def main() -> None:
     import numpy as np
     import yaml
 
-    from jeff.calibration import Calibrator
-    from jeff.router import (
+    from eljefe.calibration import Calibrator
+    from eljefe.router import (
         Router,
         labels_for,
         load_router_dataset,

@@ -20,7 +20,7 @@ from typing import Any
 
 from .schema import Generation, Task, completed_ids
 
-log = logging.getLogger("jeff.frontier")
+log = logging.getLogger("eljefe.frontier")
 
 
 def estimate_cost_usd(

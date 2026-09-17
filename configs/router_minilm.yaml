@@ -17,4 +17,4 @@ train:
   early_stopping_patience: 3
   fp16: true
 
-out_dir: artifacts/models/jeff-v0
+out_dir: artifacts/models/eljefe-v0

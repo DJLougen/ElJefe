@@ -1,7 +1,7 @@
-# Jeff — cross-slice contracts
+# ElJefe — cross-slice contracts
 
 Single source of truth for interfaces shared between implementation slices.
-`src/jeff/schema.py` is already written — do not change it without updating
+`src/eljefe/schema.py` is already written — do not change it without updating
 this file. All paths below are repo-relative; scripts resolve them from the
 repo root regardless of cwd (use `Path(__file__).resolve().parents[1]`).
 
@@ -18,7 +18,7 @@ repo root regardless of cwd (use `Path(__file__).resolve().parents[1]`).
 
 ## Module APIs
 
-### `jeff.graders`
+### `eljefe.graders`
 ```python
 def grade(task: Task, answer: str) -> GradeResult
 class GradeResult(BaseModel):  # score in [0,1]
@@ -30,7 +30,7 @@ GRADERS: dict[str, Callable[[Task, str], GradeResult]]  # keyed by Task.grader
 ```
 Graders must never raise on malformed answers — return score 0.0 with detail.
 
-### `jeff.features`
+### `eljefe.features`
 ```python
 def extract_features(prompt: str, system_prompt: str | None = None,
                      metadata: dict | None = None) -> dict[str, float | int | str]
@@ -38,7 +38,7 @@ def extract_features(prompt: str, system_prompt: str | None = None,
 Cheap derived features (plan §4): token/char counts, code-block count, URL
 presence, question-word flags, etc. Pure function, no model downloads.
 
-### `jeff.policy`
+### `eljefe.policy`
 ```python
 def hard_route(inp: RouterInput) -> str | None
     # returns "local" | "frontier" when a hard rule fires, else None
@@ -46,7 +46,7 @@ def apply_policy(out: RouterOutput, inp: RouterInput,
                  threshold: float = 0.90) -> str  # "local" | "frontier"
 ```
 
-### `jeff.metrics`
+### `eljefe.metrics`
 ```python
 def routing_metrics(rows: list[RouterRow], p_local: list[float],
                     threshold: float) -> dict
@@ -56,7 +56,7 @@ def threshold_sweep(rows, p_local, thresholds=None) -> pandas.DataFrame
 def oracle_route(row: RouterRow, quality_floor: float, epsilon: float) -> str
 ```
 
-### `jeff.calibration`
+### `eljefe.calibration`
 ```python
 class Calibrator:  # wraps isotonic / platt / temperature
     def fit(self, p: np.ndarray, y: np.ndarray) -> "Calibrator"
@@ -66,7 +66,7 @@ class Calibrator:  # wraps isotonic / platt / temperature
     def load(cls, path) -> "Calibrator"
 ```
 
-### `jeff.router`
+### `eljefe.router`
 ```python
 class Router:  # uniform wrapper over all router kinds
     def predict_proba(self, prompts: list[str],
@@ -80,7 +80,7 @@ def train_embedding_router(train, embedder_name, ...) -> Router
 def train_minilm_router(train, ...) -> Router  # dual-head fine-tune
 ```
 
-### `jeff.datasets`
+### `eljefe.datasets`
 ```python
 def fetch_source(name: str, cfg: dict) -> Iterable[Task]   # raw -> Task
 def normalize(tasks: Iterable[Task]) -> list[Task]         # dedupe + group_id
@@ -88,14 +88,14 @@ def load_tasks(path) -> list[Task]
 def split_rows(rows: list[ScoredRow], cfg) -> list[RouterRow]  # grouped splits
 ```
 
-### `jeff.local_model`
+### `eljefe.local_model`
 ```python
 class LocalGenerator:
     def __init__(self, model_id: str, revision: str | None, gen_params: dict)
     def generate(self, tasks: list[Task]) -> Iterable[Generation]  # batched
 ```
 
-### `jeff.frontier`
+### `eljefe.frontier`
 ```python
 class FrontierClient:
     def __init__(self, cfg: dict)   # provider, model, base_url, budget caps
@@ -118,6 +118,6 @@ class FrontierClient:
 
 - Seeds: everything takes `seed` from config, default 42.
 - Every script writes/updates `artifacts/reports/manifest.json` entries.
-- Scripts are runnable both locally and on Colab (`/content/jeff`); they take
+- Scripts are runnable both locally and on Colab (`/content/eljefe`); they take
   `--config` and optional `--max-per-source` / `--max-rows` pilot flags.
 - No API keys in files. Frontier reads `FIREWORKS_API_KEY` from env.

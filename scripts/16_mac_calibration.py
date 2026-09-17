@@ -19,11 +19,11 @@ from pathlib import Path
 try:
     ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (ROOT / 'src').exists():
         ROOT = Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
-from jeff.cli import parse_args
+from eljefe.cli import parse_args
 
 DEFAULT_MODEL = "mlx-community/gemma-4-e4b-it-4bit"
 
@@ -134,8 +134,8 @@ def main() -> int:
     parser.add_argument("--config", default=str(ROOT / "configs" / "local_e4b.yaml"))
     parser.add_argument(
         "--model-path",
-        default=os.environ.get("JEFF_MAC_MODEL", DEFAULT_MODEL),
-        help="local model path or HF id (default: $JEFF_MAC_MODEL or "
+        default=os.environ.get("ELJEFE_MAC_MODEL", DEFAULT_MODEL),
+        help="local model path or HF id (default: $ELJEFE_MAC_MODEL or "
         f"{DEFAULT_MODEL})",
     )
     parser.add_argument(
@@ -152,8 +152,8 @@ def main() -> int:
 
     import json
 
-    from jeff.datasets import load_tasks, update_manifest
-    from jeff.schema import completed_ids
+    from eljefe.datasets import load_tasks, update_manifest
+    from eljefe.schema import completed_ids
 
     tasks = load_tasks(args.calibration)
     out_path = Path(args.out)

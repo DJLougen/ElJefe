@@ -18,15 +18,15 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 # preference order: strongest available router wins
 ROUTER_CANDIDATES = [
-    ("minilm", "models/jeff-v0"),
+    ("minilm", "models/eljefe-v0"),
     ("embedding", "baselines/embedding"),
     ("tfidf", "baselines/tfidf"),
 ]
@@ -45,7 +45,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--top-k", type=int, default=200)
     p.add_argument("--threshold", type=float, default=0.9)
     p.add_argument("--max-rows", type=int, default=None)
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def load_pool(path: Path) -> list[dict]:
@@ -67,14 +67,14 @@ def main() -> None:
     import numpy as np
     import yaml
 
-    from jeff.calibration import Calibrator
-    from jeff.router import (
+    from eljefe.calibration import Calibrator
+    from eljefe.router import (
         Router,
         load_router_dataset,
         predict_proba_rows,
         update_manifest,
     )
-    from jeff.schema import RouterRow, stable_id
+    from eljefe.schema import RouterRow, stable_id
 
     cfg = yaml.safe_load(Path(args.config).read_text()) or {}
     emb_cfg = dict(cfg.get("embedding") or {})

@@ -1,4 +1,4 @@
-"""Probability calibration for Jeff (plan §10).
+"""Probability calibration for ElJefe (plan §10).
 
 Wraps isotonic regression, Platt scaling, and temperature scaling behind one
 picklable interface. Fit on the validation split only; freeze before test.

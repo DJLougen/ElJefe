@@ -1,7 +1,7 @@
 Metadata-Version: 2.4
-Name: jeff
+Name: eljefe
 Version: 0.1.0
-Summary: Jeff: a tiny router that predicts the marginal value of frontier inference over local Gemma 4 E4B
+Summary: ElJefe: a tiny router that predicts the marginal value of frontier inference over local Gemma 4 E4B
 Requires-Python: >=3.10
 Requires-Dist: torch
 Requires-Dist: transformers

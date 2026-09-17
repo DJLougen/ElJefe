@@ -3,9 +3,9 @@
 import numpy as np
 import pytest
 
-from jeff.calibration import Calibrator
-from jeff.metrics import oracle_route, routing_metrics, threshold_sweep
-from jeff.schema import RouterRow
+from eljefe.calibration import Calibrator
+from eljefe.metrics import oracle_route, routing_metrics, threshold_sweep
+from eljefe.schema import RouterRow
 
 
 def _row(i, local, frontier, cost=None, **md):

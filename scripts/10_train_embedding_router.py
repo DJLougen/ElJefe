@@ -17,11 +17,11 @@ import os
 try:
     REPO_ROOT = Path(__file__).resolve().parents[1]
 except NameError:  # colab exec / jupyter kernel has no __file__
-    REPO_ROOT = Path(os.environ.get('JEFF_ROOT') or '/content/jeff')
+    REPO_ROOT = Path(os.environ.get('ELJEFE_ROOT') or '/content/eljefe')
     if not (REPO_ROOT / 'src').exists():
         REPO_ROOT = Path.cwd()
 sys.path.insert(0, str(REPO_ROOT / "src"))
-from jeff.cli import parse_args as _jeff_parse_args
+from eljefe.cli import parse_args as _eljefe_parse_args
 
 
 def parse_args() -> argparse.Namespace:
@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--out-dir", default=str(REPO_ROOT / "artifacts" / "baselines" / "embedding"))
     p.add_argument("--threshold", type=float, default=0.9)
     p.add_argument("--max-rows", type=int, default=None)
-    return _jeff_parse_args(p)
+    return _eljefe_parse_args(p)
 
 
 def main() -> None:
@@ -41,8 +41,8 @@ def main() -> None:
     import numpy as np
     import yaml
 
-    from jeff.metrics import routing_metrics, threshold_sweep
-    from jeff.router import (
+    from eljefe.metrics import routing_metrics, threshold_sweep
+    from eljefe.router import (
         load_embedding_cache,
         load_router_dataset,
         predict_proba_rows,
