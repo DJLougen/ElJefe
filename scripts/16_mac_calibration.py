@@ -25,7 +25,7 @@ except NameError:  # colab exec / jupyter kernel has no __file__
 sys.path.insert(0, str(ROOT / "src"))
 from jeff.cli import parse_args
 
-DEFAULT_MODEL = "mlx-community/gemma-4-E4B-it-4bit"
+DEFAULT_MODEL = "mlx-community/gemma-4-e4b-it-4bit"
 
 
 def _peak_rss_bytes() -> int:
