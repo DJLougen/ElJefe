@@ -209,6 +209,92 @@ and re-fit the operating threshold.
 
 ---
 
+## Tutorial: train a router for *your* models on Google Colab
+
+Everything above reproduces our exact E4B-vs-deepseek router. To train
+ElJefe for a different local model, a different frontier, or your own task
+mix, you only change configs and inputs — the pipeline is model-agnostic.
+
+### What you need
+
+- A **Colab account** (free tier works; L4/A100 helps for the local-model
+  generation step) and the [Colab CLI](https://github.com/googlecolab/google-colab-cli):
+  `uv tool install google-colab-cli` then `colab auth login`.
+- An **OpenAI-compatible endpoint** for the frontier model (Fireworks,
+  OpenAI, Together, a local server — anything that speaks
+  `/chat/completions`).
+- A **Hugging Face token** if your local model is gated (Gemma is).
+
+### Step A — pick your two models
+
+Copy `configs/local_e4b.yaml` → `configs/local_mine.yaml` and set
+`model_id` to your local checkpoint (any HF causal LM that fits the GPU).
+Copy `configs/frontier.yaml` → `configs/frontier_mine.yaml` and set
+`base_url`, `model`, `api_key_env`, and the per-token prices (used for the
+budget cap and cost metrics). `max_total_cost_usd` is a hard stop.
+
+### Step B — bring your own tasks (optional)
+
+The default mix is gsm8k/math500/mmlu_pro/mbpp/ifeval. To add your own,
+write a JSONL where each row has `prompt`, a `reference` or `test_code`
+the deterministic graders can check, and a `task_family`. Drop it in
+`data/prompts/` and point `scripts/02` at it — or skip 01/02 entirely and
+hand `tasks.jsonl` directly to step 03. The only hard requirement: **every
+task must be gradable without a judge** (exact match, numeric, code tests,
+constraint checks).
+
+### Step C — run it on Colab
+
+```bash
+# provision a session (L4 for a ~4B local model; T4 is fine for small ones)
+colab new -s eljefe --gpu L4
+
+# upload the repo and install deps on the VM
+tar czf /tmp/eljefe.tar.gz --exclude=.venv --exclude=.git .
+colab upload -s eljefe /tmp/eljefe.tar.gz /content/eljefe.tar.gz
+echo "cd /content && tar xzf eljefe.tar.gz && cd eljefe && pip install -e ." | colab console -s eljefe
+
+# stage your HF token on the VM (never print it)
+echo "import os; open('/root/.cache/huggingface/token','w').write(os.environ.get('HF_TOKEN',''))" | colab exec -s eljefe
+
+# local generation — the long pole; run detached so session drops don't kill it
+colab exec -s eljefe -f scripts/03_generate_e4b.py -- --config configs/local_mine.yaml
+
+# frontier generation — API-only, can also run from your laptop
+python scripts/04_generate_frontier.py --config configs/frontier_mine.yaml
+
+# grade, split, train, evaluate
+colab exec -s eljefe -f scripts/05_grade_objective.py
+colab exec -s eljefe -f scripts/07_build_router_dataset.py
+colab exec -s eljefe -f scripts/08_train_tfidf.py
+colab exec -s eljefe -f scripts/10_train_embedding_router.py
+colab exec -s eljefe -f scripts/11_train_minilm_router.py
+colab exec -s eljefe -f scripts/12_calibrate.py -- --router minilm
+colab exec -s eljefe -f scripts/13_evaluate.py
+colab exec -s eljefe -f scripts/15_export_router.py
+
+# pull artifacts back and shut down
+colab download -s eljefe /content/eljefe/artifacts ./artifacts
+colab stop -s eljefe
+```
+
+### Colab gotchas we hit (so you don't)
+
+- `colab exec` runs your script **inside a Jupyter kernel** — `__file__` is
+  undefined and `sys.argv` is the kernel's. `eljefe.cli` handles this, but
+  for long jobs prefer real processes:
+  `echo "cd /content/eljefe && nohup python3 scripts/03_generate_e4b.py > gen.log 2>&1 &" | colab console -s eljefe`
+- Sessions drop every ~30–40 min. Detached subprocesses + a log file
+  survive; reattach with `SessionState` + `spawn_keep_alive` (see
+  `PLAN_ElJefe_Colab_CLI.md` §13 notes).
+- `--high-mem` isn't a real flag in current CLI versions — plain `--gpu L4`
+  is enough for E4B.
+- Never put API keys in committed files or commands that get logged; use
+  env vars on the VM.
+
+
+---
+
 ## What we learned (read this before replicating)
 
 1. **Label definition > model choice.** An "oracle" label
