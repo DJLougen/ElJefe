@@ -548,20 +548,35 @@ def _prompt_row(prompt: str) -> RouterRow:
 # ---------------------------------------------------------------------------
 
 
-def _labels(rows: list[RouterRow]) -> tuple[np.ndarray, np.ndarray]:
-    y = np.array(
-        [bool(r.local_sufficient) if r.local_sufficient is not None
-         else (r.local_score >= 0.7 and r.delta_q <= 0.1)
-         for r in rows],
-        dtype=np.int64,
-    )
+def _labels(rows: list[RouterRow], mode: str = "strict") -> tuple[np.ndarray, np.ndarray]:
+    """(local_sufficient, delta_q) label arrays.
+
+    mode="strict": plan §5 label — local_score >= floor AND delta_q <= eps
+    (falls back to 0.7/0.1 when unset). Conservative: also demands absolute
+    quality, not just local-beats-frontier.
+    mode="oracle": matches the oracle's argmax rule — local is sufficient
+    whenever local_score >= frontier_score. Trains Jeff to imitate the
+    quality-optimal cheap route rather than a stricter surrogate.
+    """
+    if mode == "oracle":
+        y = np.array(
+            [float(r.local_score) >= float(r.frontier_score) for r in rows],
+            dtype=np.int64,
+        )
+    else:
+        y = np.array(
+            [bool(r.local_sufficient) if r.local_sufficient is not None
+             else (r.local_score >= 0.7 and r.delta_q <= 0.1)
+             for r in rows],
+            dtype=np.int64,
+        )
     g = np.array([float(r.delta_q) for r in rows], dtype=np.float64)
     return y, g
 
 
-def labels_for(rows: list[RouterRow]) -> tuple[np.ndarray, np.ndarray]:
+def labels_for(rows: list[RouterRow], mode: str = "strict") -> tuple[np.ndarray, np.ndarray]:
     """(local_sufficient, delta_q) arrays; derives labels from scores when unset."""
-    return _labels(rows)
+    return _labels(rows, mode=mode)
 
 
 def train_tfidf(train_rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
@@ -581,7 +596,7 @@ def train_tfidf(train_rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
     )
     prompts = [r.prompt for r in train_rows]
     X = vec.fit_transform(prompts)
-    y, g = _labels(train_rows)
+    y, g = _labels(train_rows, mode=str(cfg.get("label_mode", "strict")))
 
     if len(np.unique(y)) < 2:
         p = float(y.mean()) if len(y) else 0.5
@@ -641,7 +656,7 @@ def train_embedding_router(
     featurizer = FeatureVectorizer()
     F = featurizer.fit_transform([extract_row_features(r) for r in rows])
     X = np.hstack([embeddings, F])
-    y, g = _labels(rows)
+    y, g = _labels(rows, mode=str(cfg.get("label_mode", "strict")))
 
     common = dict(
         n_estimators=int(emb_cfg.get("n_estimators", 400)),
@@ -785,6 +800,8 @@ def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
     tokenizer = AutoTokenizer.from_pretrained(encoder_name)
     model = build_minilm_module(encoder_name).to(device)
 
+    label_mode = str(cfg.get("label_mode", "strict"))
+
     class _DS(Dataset):
         def __init__(self, rs: list[RouterRow]):
             self.rs = rs
@@ -794,7 +811,7 @@ def train_minilm_router(rows: list[RouterRow], cfg: dict[str, Any]) -> Router:
 
         def __getitem__(self, i):
             r = self.rs[i]
-            y, g = _labels([r])
+            y, g = _labels([r], mode=label_mode)
             return r.prompt, float(y[0]), float(g[0])
 
     def collate(batch):

@@ -1,5 +1,7 @@
 seed: 42
-
+# "strict": local_score>=floor AND delta_q<=eps (conservative).
+# "oracle": local_score>=frontier_score — imitate the quality-optimal cheap route.
+label_mode: strict
 tfidf:
   max_features: 50000
   ngram_range: [1, 2]

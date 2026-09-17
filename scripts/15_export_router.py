@@ -95,6 +95,7 @@ def main() -> None:
             "delta_q": {0: "batch"},
         },
         opset_version=17,
+        dynamo=False,
     )
     print(f"[15] wrote {fp32_path}")
 

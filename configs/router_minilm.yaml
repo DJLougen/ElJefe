@@ -1,4 +1,5 @@
 seed: 42
+label_mode: strict
 encoder: sentence-transformers/all-MiniLM-L6-v2
 max_length: 512
 
