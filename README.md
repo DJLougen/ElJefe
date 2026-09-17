@@ -45,6 +45,16 @@ recovers most of the theoretical maximum routing value.
 | **ElJefe v0** | **100.6%** | **31.3%** | **25.1%** | 1.2% |
 | oracle (perfect router) | 105.4% | 66.6% | 47.6% | 0% |
 
+> **What "oracle" means:** the oracle is a cheat-mode router we compute
+> after the fact. Since we ran *both* models on every prompt, we know each
+> row's actual `local_score` and `frontier_score`. The oracle looks at that
+> ground truth and picks the better route per row — local whenever
+> `local_score >= frontier_score`, frontier otherwise. It's not deployable
+> (it "knows" the answer before choosing), but it marks the ceiling: the
+> best possible cost-quality tradeoff any router could achieve on this
+> data. The gap between a router and the oracle is the routing value still
+> unexploited.
+
 At a looser threshold (t=0.6): **62% of traffic stays local at 99.6% quality
 retention** — most of the oracle's headroom. ROC-AUC 0.861 vs 0.609 heuristic.
 
